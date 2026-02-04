@@ -1,16 +1,15 @@
 import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // Add this import
 import Lenis from 'lenis';
 import App from './App.jsx';
 import './index.css';
 
-
 const Root = () => {
   useEffect(() => {
-    // 1. Initialize Lenis
     const lenis = new Lenis({
       duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Premium slow-stop
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
@@ -19,7 +18,6 @@ const Root = () => {
       infinite: false,
     });
 
-    // 2. Synchronize Lenis with RequestAnimationFrame
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -27,7 +25,6 @@ const Root = () => {
 
     requestAnimationFrame(raf);
 
-    // 3. Cleanup on unmount
     return () => {
       lenis.destroy();
     };
@@ -35,7 +32,10 @@ const Root = () => {
 
   return (
     <StrictMode>
-      <App />
+      {/* Wrap App here to provide the Router context */}
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </StrictMode>
   );
 };
