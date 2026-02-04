@@ -2,19 +2,16 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { config } from './src/config/index.js';
 import { applyGlobalMiddlewares } from './src/api/middlewares/global.middleware.js';
+import chatRoutes from './src/api/routes/chat.routes.js';
 
 const startServer = async () => {
   const app = express();
 
-  // Example route in chat.routes.js or a new metrics.routes.js
-router.get('/metrics/summary', apiKeyAuth, (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: { activeSessions: [] } // Ensure this structure matches your JSX
-  });
-});
   // 1. Apply Security & Global Middlewares
   applyGlobalMiddlewares(app);
+
+  // Mount Routes
+  app.use('/api/chat', chatRoutes);
 
   // 2. Database Connection
   try {
