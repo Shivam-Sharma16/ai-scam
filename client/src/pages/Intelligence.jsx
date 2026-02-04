@@ -1,15 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { FiActivity, FiSearch, FiAlertTriangle } from 'react-icons/fi';
 import './Intelligence.css';
 
 const Intelligence = () => {
-  // Simulated neural stream data
-  const packets = [
-    { id: 1, time: '14:20:01', origin: 'NODE_X9', status: 'VERIFIED', signal: 'HEURISTIC_STABLE' },
-    { id: 2, time: '14:20:04', origin: 'NODE_V2', status: 'ENCRYPTED', signal: 'ASYNC_HANDSHAKE' },
-    { id: 3, time: '14:21:12', origin: 'NODE_ALPHA', status: 'DECRYPTING', signal: 'PATTERN_RECOGNITION' },
-    { id: 4, time: '14:22:05', origin: 'NODE_X9', status: 'VERIFIED', signal: 'DATA_INTEGRITY_HIGH' },
-  ];
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Configuration from environment variables
+  const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
+  const API_KEY = import.meta.env.VITE_API_KEY;
+
+  useEffect(() => {
+    const fetchIntelligenceData = async () => {
+      try {
+        setLoading(true);
+        // Note: This assumes an endpoint to list active intelligence sessions
+        const response = await fetch(`${API_URL}/metrics/summary`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
+          },
+        });
+
+        if (!response.ok) throw new Error('Neural link failed: Unauthorized or Server Error');
+
+        const result = await response.json();
+        
+        // Map backend intelligence data to UI packets
+        // If your backend returns a list of sessions, we map them here
+        setConversations(result.data?.activeSessions || []);
+      } catch (err) {
+        setError(err.message);
+        console.error('Intelligence Fetch Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIntelligenceData();
+    // Optional: Set up polling every 30 seconds for "Live" feel
+    const interval = setInterval(fetchIntelligenceData, 30000);
+    return () => clearInterval(interval);
+  }, [API_URL, API_KEY]);
 
   const pageVariants = {
     initial: { opacity: 0 },
@@ -34,51 +68,68 @@ const Intelligence = () => {
       <header className="page-header">
         <h1 className="glitch-text" data-text="Live Intelligence">Live Intelligence</h1>
         <div className="status-badge">
-          <span className="pulse-dot"></span> NEURAL STREAM ACTIVE
+          <span className={`pulse-dot ${error ? 'error' : 'active'}`}></span> 
+          {error ? 'SYSTEM OFFLINE' : 'NEURAL STREAM ACTIVE'}
         </div>
       </header>
 
       <div className="intelligence-grid">
-        {/* Main Feed */}
-        <section className="stream-section">
+        {/* Main Feed Section */}
+        <section className="stream-section glass">
           <div className="section-header">
-            <h3>Neural Packets</h3>
-            <span className="entry-count">{packets.length} ENTRIES FOUND</span>
+            <h3><FiSearch /> Neural Packets</h3>
+            <span className="entry-count">
+              {loading ? 'SYNCHRONIZING...' : `${conversations.length} ACTIVE THREATS`}
+            </span>
           </div>
+
           <div className="packet-list">
-            {packets.map((packet) => (
-              <motion.div key={packet.id} className="packet-row" variants={itemVariants}>
-                <div className="packet-time">[{packet.time}]</div>
-                <div className="packet-origin">{packet.origin}</div>
-                <div className="packet-signal">{packet.signal}</div>
-                <div className={`packet-status ${packet.status.toLowerCase()}`}>
-                  {packet.status}
-                </div>
-              </motion.div>
-            ))}
+            {error ? (
+              <div className="error-message">
+                <FiAlertTriangle /> {error}
+              </div>
+            ) : conversations.length > 0 ? (
+              conversations.map((convo) => (
+                <motion.div key={convo._id} className="packet-row" variants={itemVariants}>
+                  <div className="packet-time">[{new Date(convo.updatedAt).toLocaleTimeString()}]</div>
+                  <div className="packet-origin">ID: {convo.conversationId.slice(0, 8)}...</div>
+                  <div className="packet-signal">
+                    {convo.intelligence?.detectedTactics?.[0] || 'ANALYZING_INTENT'}
+                  </div>
+                  <div className={`packet-status ${convo.intelligence?.threatLevel?.toLowerCase()}`}>
+                    {convo.intelligence?.threatLevel || 'UNCERTAIN'}
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              !loading && <div className="no-data">No active neural packets detected.</div>
+            )}
           </div>
         </section>
 
-        {/* Sidebar Analysis */}
+        {/* Sidebar Analysis Section */}
         <aside className="analysis-sidebar">
-          <motion.div className="analysis-card" variants={itemVariants}>
-            <h4>Threat Heuristics</h4>
+          <motion.div className="analysis-card glass" variants={itemVariants}>
+            <h4><FiActivity /> Threat Heuristics</h4>
             <div className="progress-bar">
               <motion.div 
                 className="progress-fill"
                 initial={{ width: 0 }}
-                animate={{ width: '84%' }}
+                animate={{ width: error ? '0%' : '84%' }}
                 transition={{ duration: 1, delay: 0.5 }}
               />
             </div>
-            <p className="analysis-note">Stability verified across all active nodes.</p>
+            <p className="analysis-note">
+              {error ? 'Signal lost. Re-routing through secondary nodes.' : 'Stability verified across all active nodes.'}
+            </p>
           </motion.div>
 
-          <motion.div className="analysis-card" variants={itemVariants}>
+          <motion.div className="analysis-card glass" variants={itemVariants}>
             <h4>Global Sync</h4>
             <div className="sync-stats">
-              <div className="stat"><span>LATENCY</span> <span>12ms</span></div>
-              <div className="stat"><span>UPTIME</span> <span>99.9%</span></div>
+              <div className="stat"><span>LATENCY</span> <span>{error ? '--' : '12ms'}</span></div>
+              <div className="stat"><span>UPTIME</span> <span>{error ? '0%' : '99.9%'}</span></div>
+              <div className="stat"><span>MODEL</span> <span>GEMINI_PRO_V1</span></div>
             </div>
           </motion.div>
         </aside>
