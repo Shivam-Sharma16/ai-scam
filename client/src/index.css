@@ -6,24 +6,20 @@
 }
 
 :root {
-  /* --- Colors: Obsidian Spectrum (Light Mode) --- */
-  --bg-space: #fcfcfd;
-  --surface-obsidian: #ffffff;
-  --surface-elevated: #f4f4f7;
-  --primary-cyan: #00b4d8; /* Calmed for light mode legibility */
-  --accent-violet: #6366f1;
+  /* Core Palette */
+  --bg-main: #0a0b10;
+  --surface-card: #161b22;
+  --primary-cyan: #00e8ff;
+  --primary-glow: rgba(0, 232, 255, 0.15);
   
-  --text-main: #020408;
-  --text-secondary: #64748b;
-  --border-subtle: #e2e8f0;
+  /* Text & Borders */
+  --text-main: #f0f6fc;
+  --text-secondary: #8b949e;
+  --border-subtle: rgba(240, 246, 252, 0.1);
   
-  /* --- Functional --- */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-
-  /* --- Typography --- */
-  --font-main: 'Geist Sans', 'Inter', system-ui, sans-serif;
+  /* Glass Effects */
+  --glass-bg: rgba(10, 11, 16, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.05);
 }
 
 html {
@@ -37,9 +33,11 @@ html {
 }
 
 body {
-  min-height: 100vh;
-  line-height: 1.5;
-  overflow-x: hidden;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  /* Use a modern sans-serif stack for a professional feel */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* --- Typography Rules --- */
